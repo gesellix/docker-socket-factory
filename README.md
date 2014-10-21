@@ -1,2 +1,2 @@
-docker-cert-socket-factory
-==========================
+docker-socket-factory
+=====================
