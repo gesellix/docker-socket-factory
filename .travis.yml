@@ -1,0 +1,11 @@
+language: java
+jdk: openjdk7
+env:
+  global:
+    - TERM=dumb
+    - secure: "LGT6JhpCEssDu15nQODk9JpzIO4WhIV16MNsBKPFr1vW2qHC0qpIwSNqinaFGDxuPYtc/V+ahSKFRy2CqQBpCf/VvNw+s4vJkT2RUxjzXkKBeCPCRhxWxJmKBNIiEYSWPhRRxkhY5wcC6Myuh28YpisWHg2C1qr1DExiSMV8QYA="
+    - secure: "Av5YjYL45XOVCiuJ3fprrzNl0O7pLaudOtzDnVYoKHkahTO8BoFafu3Y7FN396OWgDunz5Pl1asSo6/eAYjIuuzBqMszhcJCVVdkP2/asbczkJjDDp1x+jp+zcvha5X7jls864B04vu7CdetJj+UGjpJZGv2E/Ay7RvPxI8XQ6A="
+script:
+  - ./gradlew clean build --stacktrace --info
+after_success:
+  - ./gradlew bintrayUpload -x check --info
