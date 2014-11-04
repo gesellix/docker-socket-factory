@@ -1,14 +1,14 @@
 package socketfactory
 
-import socketfactory.spi.SocketFactory
+import socketfactory.spi.SocketFactorySpi
 
 class SocketFactoryService {
 
   private static SocketFactoryService service
-  private ServiceLoader<SocketFactory> loader
+  private ServiceLoader<SocketFactorySpi> loader
 
   private SocketFactoryService() {
-    loader = ServiceLoader.load(SocketFactory)
+    loader = ServiceLoader.load(SocketFactorySpi)
   }
 
   static synchronized SocketFactoryService getInstance() {
@@ -22,9 +22,9 @@ class SocketFactoryService {
     def socketFactory = null
 
     try {
-      Iterator<SocketFactory> socketFactories = loader.iterator()
+      Iterator<SocketFactorySpi> socketFactories = loader.iterator()
       while (socketFactory == null && socketFactories.hasNext()) {
-        SocketFactory candidate = socketFactories.next()
+        SocketFactorySpi candidate = socketFactories.next()
         if (candidate.supports(uri)) {
           socketFactory = candidate
         }

@@ -1,14 +1,19 @@
 package de.gesellix.socketfactory.unix
 
+import org.apache.http.HttpHost
 import org.apache.http.conn.ConnectTimeoutException
-import org.apache.http.conn.scheme.Scheme
+import org.apache.http.conn.socket.LayeredConnectionSocketFactory
 import org.apache.http.params.HttpConnectionParams
 import org.apache.http.params.HttpParams
+import org.apache.http.protocol.HttpContext
 import org.newsclub.net.unix.AFUNIXSocket
 import org.newsclub.net.unix.AFUNIXSocketAddress
-import socketfactory.spi.SocketFactory
+import socketfactory.spi.SocketFactorySpi
 
-class UnixSocketFactory implements SocketFactory {
+class UnixSocketFactory implements SocketFactorySpi {
+
+  @Delegate
+  LayeredConnectionSocketFactory delegate
 
   File socketFile
 
@@ -27,27 +32,27 @@ class UnixSocketFactory implements SocketFactory {
   }
 
   @Override
-  def configure(httpClient, String dockerHost) {
-    this.socketFile = new File(dockerHost.replaceAll("unix://localhost", ""))
-    def unixScheme = new Scheme("unix", 0xffff, this)
-    httpClient.getConnectionManager().getSchemeRegistry().register(unixScheme)
+  def configureFor(uri) {
+    def sanitizedUri = uri.replaceAll("^unix://", "unix://localhost")
+    this.socketFile = new File(sanitizedUri.replaceAll("unix://localhost", ""))
   }
 
   @Override
-  Socket createSocket(HttpParams params) throws IOException {
+  Socket createSocket(HttpContext context) throws IOException {
     AFUNIXSocket socket = AFUNIXSocket.newInstance();
     return socket
   }
 
   @Override
-  Socket connectSocket(Socket socket, InetSocketAddress remoteAddress, InetSocketAddress localAddress, HttpParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
-    int connTimeout = HttpConnectionParams.getConnectionTimeout(params)
-//    int soTimeout = HttpConnectionParams.getSoTimeout(params)
-
+  Socket connectSocket(
+      int connectTimeout,
+      Socket socket,
+      HttpHost host,
+      InetSocketAddress remoteAddress,
+      InetSocketAddress localAddress,
+      HttpContext context) throws IOException {
     try {
-//      socket.setSoTimeout(soTimeout)
-      socket.connect(new AFUNIXSocketAddress(socketFile), connTimeout)
-//      socket.connect(new AFUNIXSocketAddress(socketFile))
+      socket.connect(new AFUNIXSocketAddress(socketFile), connectTimeout)
     }
     catch (SocketTimeoutException e) {
       throw new ConnectTimeoutException("Connect to '" + socketFile + "' timed out")
@@ -57,6 +62,35 @@ class UnixSocketFactory implements SocketFactory {
   }
 
   @Override
+  @Deprecated
+  Socket createSocket(HttpParams params) throws IOException {
+    return createSocket((HttpContext) null)
+  }
+
+  @Override
+  @Deprecated
+  Socket createLayeredSocket(
+      Socket socket,
+      String target,
+      int port,
+      HttpParams params) throws IOException, UnknownHostException {
+    return createSocket(params)
+  }
+
+  @Override
+  @Deprecated
+  Socket connectSocket(
+      Socket socket,
+      InetSocketAddress remoteAddress,
+      InetSocketAddress localAddress,
+      HttpParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
+
+    int connTimeout = HttpConnectionParams.getConnectionTimeout(params)
+    return connectSocket(connTimeout, socket, new HttpHost(remoteAddress.address), remoteAddress, localAddress, null)
+  }
+
+  @Override
+  @Deprecated
   boolean isSecure(Socket sock) throws IllegalArgumentException {
     return false
   }

@@ -1,16 +1,20 @@
 package de.gesellix.socketfactory.https
 
-import org.apache.http.conn.scheme.Scheme
+import org.apache.http.HttpHost
+import org.apache.http.conn.ConnectTimeoutException
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory
 import org.apache.http.conn.ssl.SSLContexts
-import org.apache.http.conn.ssl.SSLSocketFactory
-import socketfactory.spi.SocketFactory
+import org.apache.http.params.HttpConnectionParams
+import org.apache.http.params.HttpParams
+import org.apache.http.protocol.HttpContext
+import socketfactory.spi.SocketFactorySpi
 
 import static de.gesellix.socketfactory.https.KeyStoreUtil.KEY_STORE_PASSWORD
 
-class HttpsSocketFactory implements SocketFactory {
+class HttpsSocketFactory implements SocketFactorySpi {
 
   @Delegate
-  private SSLSocketFactory delegate
+  private SSLConnectionSocketFactory delegate
 
   @Override
   def supports(uri) {
@@ -25,11 +29,8 @@ class HttpsSocketFactory implements SocketFactory {
   }
 
   @Override
-  def configure(httpClient, String sanitizedUri) {
-    delegate = new SSLSocketFactory(createSslContext())
-    def parsedUri = new URI(sanitizedUri)
-    def httpsScheme = new Scheme(parsedUri.scheme, delegate, parsedUri.port)
-    httpClient.connectionManager.schemeRegistry.register(httpsScheme)
+  def configureFor(sanitizedUri) {
+    delegate = new SSLConnectionSocketFactory(createSslContext())
   }
 
   def getDockerCertPath() {
@@ -46,4 +47,39 @@ class HttpsSocketFactory implements SocketFactory {
         .loadTrustMaterial(keyStore)
         .build()
   }
+
+  @Override
+  @Deprecated
+  Socket createSocket(HttpParams params) throws IOException {
+    return createSocket((HttpContext) null)
+  }
+
+  @Override
+  @Deprecated
+  Socket connectSocket(
+      Socket socket,
+      InetSocketAddress remoteAddress,
+      InetSocketAddress localAddress,
+      HttpParams params) throws IOException, UnknownHostException, ConnectTimeoutException {
+
+    int connTimeout = HttpConnectionParams.getConnectionTimeout(params)
+    return connectSocket(connTimeout, socket, new HttpHost(remoteAddress.address), remoteAddress, localAddress, null)
+  }
+
+  @Override
+  @Deprecated
+  Socket createLayeredSocket(
+      Socket socket,
+      String target,
+      int port,
+      HttpParams params) throws IOException, UnknownHostException {
+    return delegate.createLayeredSocket(socket, target, port, null)
+  }
+
+  @Override
+  @Deprecated
+  boolean isSecure(Socket sock) throws IllegalArgumentException {
+    return true
+  }
+
 }
