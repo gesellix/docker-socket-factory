@@ -81,5 +81,4 @@ class HttpsSocketFactory implements SocketFactorySpi {
   boolean isSecure(Socket sock) throws IllegalArgumentException {
     return true
   }
-
 }

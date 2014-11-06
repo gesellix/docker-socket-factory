@@ -32,9 +32,8 @@ class UnixSocketFactory implements SocketFactorySpi {
   }
 
   @Override
-  def configureFor(uri) {
-    def sanitizedUri = uri.replaceAll("^unix://", "unix://localhost")
-    this.socketFile = new File(sanitizedUri.replaceAll("unix://localhost", ""))
+  def configureFor(sanitizedUri) {
+    this.socketFile = new File(sanitizedUri.replaceAll("unix://localhost", "") as String)
   }
 
   @Override
@@ -92,6 +91,7 @@ class UnixSocketFactory implements SocketFactorySpi {
   @Override
   @Deprecated
   boolean isSecure(Socket sock) throws IllegalArgumentException {
-    return false
+    // this is a fake
+    return true
   }
 }

@@ -11,11 +11,8 @@ import java.security.cert.X509Certificate
 import java.security.spec.PKCS8EncodedKeySpec
 
 /**
- * Utility class for building up a keystore which can be used in
- * SSL communication.
- *
- * @author roland
- * @since 20.10.14
+ * A slightly modified copy from https://github.com/rhuss/docker-maven-plugin
+ * with kind permission of Roland Huß (https://twitter.com/ro14nd).
  */
 public class KeyStoreUtil {
 
