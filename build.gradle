@@ -2,15 +2,14 @@ import java.text.SimpleDateFormat
 
 buildscript {
   repositories {
-    maven { url "https://github.com/ben-manes/gradle-versions-plugin/raw/mvnrepo" }
-    maven { url 'http://jcenter.bintray.com' }
+    jcenter()
     mavenLocal()
     mavenCentral()
   }
 
   dependencies {
     classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.5-beta-5'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.5'
   }
 }
 
@@ -25,7 +24,7 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
-apply plugin: 'versions'
+apply plugin: 'com.github.ben-manes.versions'
 
 ext {
   localJars = fileTree(dir: 'libs', include: ['*.jar'])
