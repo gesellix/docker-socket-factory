@@ -20,7 +20,9 @@ class HttpsSocketFactory implements SocketFactorySpi {
   def supports(uri) {
     def parsedUri = new URI(uri)
     def dockerCertPath = getDockerCertPath()
-    (2376 == parsedUri.port || "https" == parsedUri.scheme) && new File(dockerCertPath).isDirectory()
+    def isValidUri = 2376 == parsedUri.port || "https" == parsedUri.scheme
+    def certsPathExists = dockerCertPath && new File(dockerCertPath).isDirectory()
+    return isValidUri && certsPathExists
   }
 
   @Override
